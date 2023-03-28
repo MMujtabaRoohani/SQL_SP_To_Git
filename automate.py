@@ -1,13 +1,6 @@
-#!/usr/bin/env python
-# coding: utf-8
+# Automating Stored Procedures to SQL Files
 
-# ## Automating Stored Procedures to SQL Files
-
-# #### Import Statements
-
-# In[1]:
-
-
+# Import Statements
 import pyodbc
 import functools
 import re
@@ -16,11 +9,7 @@ import argparse
 import sys
 
 
-# #### Argument Variables & Credentials
-
-# In[2]:
-
-
+## Argument Variables & Credentials
 # Initialize parser
 parser = argparse.ArgumentParser()
  
@@ -31,16 +20,15 @@ parser.add_argument("-u", "--user", help = "User (Default:sa)")
 parser.add_argument("-p", "--password", help = "Password (Default:sa9)")
 parser.add_argument("-t", "--port", help = "SQL Port (Default:1433)")
  
-# Read arguments from command line
-
-
 # Default values
 database=None
 server="localhost"
 password="sa9"
 user="sa"
 port=1433
+driver="FreeTDS"
  
+# Read arguments from command line
 try:
     args = parser.parse_args()
     if args.database:
@@ -60,11 +48,7 @@ if port == None or password == None or user == None or server == None or databas
     sys.exit("All required arguments aren't initialized")
 
 
-# #### Connecting to SQL
-
-# In[3]:
-
-
+# Connecting to SQL
 try:
     myconn.close()
 except:
@@ -78,14 +62,10 @@ myconn = pyodbc.connect(
     tds_version='7.4',
     password=password,
     port=port,
-    driver='FreeTDS'
+    driver=driver
 )
 myconn.autocommit = True
 print("Connected")
-
-
-# In[4]:
-
 
 def execQueryWithResult(query, conn):
     mycursor = conn.cursor()
@@ -98,11 +78,7 @@ def execQueryWithResult(query, conn):
     return myrows
 
 
-# #### Retrieving all Stored_Procedures
-
-# In[5]:
-
-
+# Retrieving all Stored_Procedures
 storedProcedures = execQueryWithResult('''
     SELECT 
       ROUTINE_SCHEMA,
@@ -112,11 +88,7 @@ storedProcedures = execQueryWithResult('''
 ''', myconn)
 
 
-# #### Save stored procedure to a file
-
-# In[18]:
-
-
+# Save stored procedure to a file
 def saveStoredProcedureToFile(spSchema, spName):
     spLines = execQueryWithResult(f'EXEC sp_helptext N\'{database}.{spSchema}.{spName}\'', myconn)
     spCode = functools.reduce(lambda a, b: a+b, [line[0] for line in spLines])
@@ -128,9 +100,6 @@ def saveStoredProcedureToFile(spSchema, spName):
     writeCodeToFile(spName, spCode)
 
 
-# In[19]:
-
-
 def writeCodeToFile(spName, spCode):
     os.makedirs(database+"_sp", exist_ok=True)
     with open(database+"_sp/"+spName+".sql", "w") as file:
@@ -138,9 +107,5 @@ def writeCodeToFile(spName, spCode):
         file.write(spCode)
 
 
-# In[20]:
-
-
 for (spSchema, spName) in storedProcedures:
     saveStoredProcedureToFile(spSchema, spName)
-
