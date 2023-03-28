@@ -19,6 +19,7 @@ parser.add_argument("-s", "--server", help = "SQL Host Address (Default:localhos
 parser.add_argument("-u", "--user", help = "User (Default:sa)")
 parser.add_argument("-p", "--password", help = "Password (Default:sa9)")
 parser.add_argument("-t", "--port", help = "SQL Port (Default:1433)")
+parser.add_argument("-r", "--driver", help = "Driver (Default:FreeTDS)")
  
 # Default values
 database=None
